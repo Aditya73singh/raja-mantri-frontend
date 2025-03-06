@@ -9,22 +9,26 @@ function App() {
     const [isJoined, setIsJoined] = useState(false);
 
     useEffect(() => {
-        socket.on("updatePlayers", (playerList) => {
-            console.log("✅ Players Updated:", playerList);
-            setPlayers(playerList);
-        });
+    socket.on("connect", () => {
+        console.log(`✅ Connected to WebSocket Server! Socket ID: ${socket.id}`);
+    });
 
-        socket.on("joinedSuccessfully", (data) => {
-            console.log(`🎉 Joined Successfully as ${data.playerName}`);
-            setIsJoined(true);
-        });
+    socket.on("updatePlayers", (playerList) => {
+        console.log("✅ Players Updated:", playerList);
+        setPlayers(playerList);
+    });
 
-        socket.on("gameFull", (message) => {
-            alert(message);
-        });
+    socket.on("joinedSuccessfully", (data) => {
+        console.log(`🎉 Joined Successfully as ${data.playerName}`);
+        setIsJoined(true);
+    });
 
-        return () => socket.disconnect();
-    }, []);
+    socket.on("gameFull", (message) => {
+        alert(message);
+    });
+
+    return () => socket.disconnect();
+}, []);
 
   const handleJoin = () => {
     if (playerName.trim() !== "") {
