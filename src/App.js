@@ -26,13 +26,15 @@ function App() {
         return () => socket.disconnect();
     }, []);
 
-    const handleJoin = () => {
-        if (playerName.trim() !== "") {
-            socket.emit("joinGame", playerName);
-        } else {
-            alert("❌ Please enter a valid name!");
-        }
-    };
+  const handleJoin = () => {
+    if (playerName.trim() !== "") {
+        console.log("🟢 Emitting 'joinGame' event with name:", playerName);
+        socket.emit("joinGame", playerName);
+    } else {
+        alert("❌ Please enter a valid name!");
+    }
+};
+
 
     return (
         <div style={{ textAlign: "center", padding: "20px" }}>
