@@ -1,0 +1,16 @@
+{
+  "name": "raja-mantri-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Raja Mantri Chor Sipahi",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "^5.0.0",
+    "socket.io-client": "^4.5.2"
+  }
+}
