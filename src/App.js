@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io("https://your-backend-url.onrender.com"); // Replace with your backend URL
+const socket = io("https://raja-mantri-backend.onrender.com"); // Replace with your backend URL
 
 function App() {
     const [playerName, setPlayerName] = useState("");
