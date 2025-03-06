@@ -1,67 +1,65 @@
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
+import React, { useEffect, useState } from "react";
+import io from "socket.io-client";
 
-const socket = io("https://raja-mantri-game.onrender.com"); // Replace with your backend URL
+const socket = io("https://your-backend-url.onrender.com"); // Replace with your backend URL
 
 function App() {
-  const [players, setPlayers] = useState({});
-  const [role, setRole] = useState("");
-  const [sipahiGuess, setSipahiGuess] = useState("");
-  const [message, setMessage] = useState("");
+    const [playerName, setPlayerName] = useState("");
+    const [players, setPlayers] = useState({});
+    const [isJoined, setIsJoined] = useState(false);
 
-  useEffect(() => {
-    socket.on("updatePlayers", (playerList) => setPlayers(playerList));
-    socket.on("startGame", (playerData) => {
-      setPlayers(playerData);
-      setRole(playerData[socket.id]?.role);
-    });
-    socket.on("roundResult", ({ result }) => setMessage(result.message));
+    useEffect(() => {
+        socket.on("updatePlayers", (playerList) => {
+            console.log("✅ Players Updated:", playerList);
+            setPlayers(playerList);
+        });
 
-    return () => socket.disconnect();
-  }, []);
+        socket.on("joinedSuccessfully", (data) => {
+            console.log(`🎉 Joined Successfully as ${data.playerName}`);
+            setIsJoined(true);
+        });
 
-  const joinGame = () => {
-    const playerName = prompt("Enter your name:");
-    socket.emit("joinGame", playerName);
-  };
+        socket.on("gameFull", (message) => {
+            alert(message);
+        });
 
-  const makeGuess = () => {
-    socket.emit("makeGuess", { sipahiId: socket.id, guessedPlayerId: sipahiGuess });
-  };
+        return () => socket.disconnect();
+    }, []);
 
-  return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h1>🎭 Raja Mantri Chor Sipahi 🎭</h1>
-      {!role ? (
-        <button onClick={joinGame}>Join Game</button>
-      ) : (
-        <>
-          <h2>Your Role: {role}</h2>
-          <h3>Players:</h3>
-          <ul>
-            {Object.entries(players).map(([id, player]) => (
-              <li key={id}>
-                {player.name} - {player.points} points
-              </li>
-            ))}
-          </ul>
-          {role === "Sipahi" && (
-            <div>
-              <h3>Guess the Chor:</h3>
-              <select onChange={(e) => setSipahiGuess(e.target.value)}>
-                <option value="">Select Player</option>
-                {Object.entries(players).map(
-                  ([id, player]) => id !== socket.id && <option key={id} value={id}>{player.name}</option>
-                )}
-              </select>
-              <button onClick={makeGuess}>Submit Guess</button>
-            </div>
-          )}
-          <h3>{message}</h3>
-        </>
-      )}
-    </div>
-  );
+    const handleJoin = () => {
+        if (playerName.trim() !== "") {
+            socket.emit("joinGame", playerName);
+        } else {
+            alert("❌ Please enter a valid name!");
+        }
+    };
+
+    return (
+        <div style={{ textAlign: "center", padding: "20px" }}>
+            <h1>🎮 Raja Mantri Chor Sipahi Game</h1>
+
+            {!isJoined ? (
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Enter your name"
+                        value={playerName}
+                        onChange={(e) => setPlayerName(e.target.value)}
+                    />
+                    <button onClick={handleJoin}>Join Game</button>
+                </div>
+            ) : (
+                <h2>✅ You have joined the game as {playerName}</h2>
+            )}
+
+            <h3>Players:</h3>
+            <ul>
+                {Object.values(players).map((player) => (
+                    <li key={player.id}>{player.name}</li>
+                ))}
+            </ul>
+        </div>
+    );
 }
 
 export default App;
