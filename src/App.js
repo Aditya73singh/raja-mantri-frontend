@@ -111,7 +111,7 @@ function App() {
 
     return (
         <div style={{ textAlign: "center", padding: "20px", fontFamily: "Arial, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
-            <h1 style={{ color: "#4a148c" }}>𝕶𝖎𝖓𝖌 𝖒𝖎𝖓𝖎𝖘𝖙𝖊𝖗 𝕲𝖆𝖒𝖊 <em><small>hbd dk ji<small></em> </h1>
+            <h1 style={{ color: "#4a148c" }}>𝕶𝖎𝖓𝖌 𝖒𝖎𝖓𝖎𝖘𝖙𝖊𝖗 𝕲𝖆𝖒𝖊  hbd dk ji  </h1>
 
             {!isJoined ? (
                 <div style={{ margin: "40px 0", padding: "20px", backgroundColor: "#f5f5f5", borderRadius: "8px" }}>
