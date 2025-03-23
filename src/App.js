@@ -15,6 +15,7 @@ function App() {
     const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
     const [finalScores, setFinalScores] = useState([]);
+    const [sipahiTimeLeft, setSipahiTimeLeft] = useState(0); // Track remaining time
     
     useEffect(() => {
         socket.on("connect", () => console.log(`✅ Connected as ${socket.id}`));
@@ -44,12 +45,23 @@ function App() {
             console.log("🤔 You are the Sipahi! Guess who is the Chor.");
             setIsSipahiTurn(true);
         });
+        
+        // Listen for timer events
+        socket.on("sipahiTurnStarted", ({ time }) => {
+            console.log(`⏱️ Sipahi has ${time} seconds to guess`);
+            setSipahiTimeLeft(time);
+        });
+        
+        socket.on("sipahiTimeUpdate", ({ timeLeft }) => {
+            setSipahiTimeLeft(timeLeft);
+        });
 
         socket.on("roundResult", ({ success, players, message }) => {
             console.log(`📣 Round result: ${message}`);
             setPlayers(players);
             setRoundResults({ success, message });
             setIsSipahiTurn(false);
+            setSipahiTimeLeft(0); // Reset timer
         });
         
         socket.on("gameOver", ({ winner, finalScores }) => {
@@ -58,6 +70,7 @@ function App() {
             setWinner(winner);
             setFinalScores(finalScores);
             setGameStarted(false);
+            setSipahiTimeLeft(0); // Reset timer
         });
         
         socket.on("gameCancelled", ({ message }) => {
@@ -66,6 +79,7 @@ function App() {
             setGameOver(false);
             setRoundResults(null);
             setIsSipahiTurn(false);
+            setSipahiTimeLeft(0); // Reset timer
         });
 
         return () => socket.disconnect();
@@ -108,6 +122,13 @@ function App() {
             default: return "❓ Hidden";
         }
     };
+    
+    // Timer color based on time remaining
+    const getTimerColor = (timeLeft) => {
+        if (timeLeft > 15) return "#4caf50"; // Green
+        if (timeLeft > 5) return "#ff9800";  // Orange
+        return "#f44336";                     // Red
+    };
 
     return (
         <div style={{ textAlign: "center", padding: "20px", fontFamily: "Arial, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
@@ -135,6 +156,28 @@ function App() {
                     <div style={{ backgroundColor: "#e1bee7", padding: "15px", borderRadius: "8px", marginBottom: "20px" }}>
                         <h2>Round {roundInfo.round} of {roundInfo.totalRounds}</h2>
                         <h3>Your Role: <span style={{ fontWeight: "bold" }}>{getRoleEmoji(playerRole)}</span></h3>
+                        
+                        {/* Timer display */}
+                        {sipahiTimeLeft > 0 && (
+                            <div style={{ 
+                                margin: "15px auto", 
+                                padding: "10px", 
+                                backgroundColor: "#f3e5f5", 
+                                borderRadius: "8px", 
+                                width: "200px" 
+                            }}>
+                                <h3 style={{ margin: "0 0 10px 0" }}>Time Remaining</h3>
+                                <div style={{
+                                    fontSize: "28px",
+                                    fontWeight: "bold",
+                                    color: getTimerColor(sipahiTimeLeft),
+                                    padding: "5px",
+                                    borderRadius: "4px"
+                                }}>
+                                    {sipahiTimeLeft} seconds
+                                </div>
+                            </div>
+                        )}
                         
                         {roundResults && (
                             <div style={{ 
@@ -193,6 +236,14 @@ function App() {
                                             </button>
                                         ))}
                                 </div>
+                            </div>
+                        )}
+                        
+                        {/* Notice for non-Sipahi players during Sipahi's turn */}
+                        {sipahiTimeLeft > 0 && playerRole !== "Sipahi" && (
+                            <div style={{ backgroundColor: "#e8f5e9", padding: "15px", borderRadius: "8px", margin: "15px 0" }}>
+                                <h3>👮 Sipahi is deciding who is the Chor...</h3>
+                                <p>Waiting for Sipahi to make a guess.</p>
                             </div>
                         )}
                     </div>
@@ -270,11 +321,11 @@ function App() {
                     <li><strong>Roles & Points:</strong> Raja (800), Mantri (900), Chor (0), Sipahi (1000)</li>
                     <li><strong>Game Length:</strong> 7 rounds</li>
                     <li><strong>Hidden Roles:</strong> Only Raja and Sipahi are revealed publicly</li>
-                    <li><strong>Guessing:</strong> Sipahi tries to guess who is the Chor</li>
+                    <li><strong>Guessing:</strong> Sipahi has 30 seconds to guess who is the Chor</li>
                     <li><strong>Scoring:</strong> 
                         <ul>
                             <li>If Sipahi guesses correctly: Everyone keeps their points</li>
-                            <li>If Sipahi guesses incorrectly: Chor gets Sipahi's points (1000) and Sipahi gets 0</li>
+                            <li>If Sipahi guesses incorrectly or time runs out: Chor gets Sipahi's points (1000) and Sipahi gets 0</li>
                         </ul>
                     </li>
                     <li><strong>Winner:</strong> Player with the highest total points after all rounds</li>
